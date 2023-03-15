@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Security;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MatrixRain
+﻿namespace MatrixRain
 {
     class Program
     {
         private static readonly int[,] Sets = {{48, 57}, {65, 90}, {48, 90}};
 
-        ///<summary>
+        /// <summary>
         /// Digital Matrix rain from the Matrix movie, homework
         /// </summary>
         /// <param name="directionUp">Direction of falling code up</param>
