@@ -10,7 +10,7 @@ namespace MatrixRain
 {
     class Program
     {
-        private static int[,] sets = {{48, 57}, {65, 90}, {48, 90}};
+        private static readonly int[,] Sets = {{48, 57}, {65, 90}, {48, 90}};
 
         ///<summary>
         /// Digital Matrix rain from the Matrix movie, homework
@@ -21,25 +21,25 @@ namespace MatrixRain
         /// <param name="characters">The set of characters from which the falling code will be generated</param>
         static void Main(bool directionUp = false, ConsoleColor color = ConsoleColor.Green, int delaySpeed = 1, Characters characters = Characters.AlphaNumeric)
         {
-            List<Kvapka> kvapky = new List<Kvapka>();
-            List<Kvapka> vymaz = new List<Kvapka>();
-            MatrixRain mr = new MatrixRain();
+            List<Drop> drops = new List<Drop>();
+            List<Drop> deleteList = new List<Drop>();
+            MatrixRain matrixRain = new MatrixRain();
 
             Console.Clear();
             Console.CursorVisible = false;
 
-            bool hore = directionUp;
+            bool up = directionUp;
             int sleep = delaySpeed;
             int set = (int)characters;
 
             Console.ForegroundColor = color;
-            int i = 0;
+            int counter = 0;
             while (!Console.KeyAvailable)
             {
-                mr.posunKvapky(ref i, ref kvapky, ref vymaz, hore, sleep, sets[set,0], sets[set,1], color);
-                if ((i % 2) == 0)
+                matrixRain.MoveDrops(ref counter, ref drops, ref deleteList, up, sleep, Sets[set,0], Sets[set,1], color);
+                if ((counter % 2) == 0)
                 {
-                    mr.generujKvapky(ref kvapky, hore);
+                    matrixRain.GenerateDrops(ref drops, up);
                 }
             }
 
@@ -58,38 +58,38 @@ namespace MatrixRain
 
     class MatrixRain
     {
-        private Random r = new();
-        public void posunKvapky(ref int i, ref List<Kvapka> kvapky, ref List<Kvapka> vymaz, bool hore, int sleep, int lower, int upper, ConsoleColor color)
+        private Random rand = new();
+        public void MoveDrops(ref int i, ref List<Drop> drops, ref List<Drop> deleteList, bool up, int sleep, int lower, int upper, ConsoleColor color)
         {
-            foreach (var k in kvapky)
+            foreach (var drop in drops)
             {
-                Console.SetCursorPosition(k.Pozicia, k.Y);
+                Console.SetCursorPosition(drop.XPosition, drop.YPosition);
 
-                int decChar = r.Next(lower, upper + 1);
+                int decChar = rand.Next(lower, upper + 1);
 
-                if (!k.End)
+                if (!drop.FirstHidden)
                     Console.ForegroundColor = ConsoleColor.White;
 
                 Console.Write((char)decChar);
 
-                if (k.Visible >= k.Dlzka)
-                    k.Visible = k.Dlzka;
+                if (drop.VisibleCount >= drop.Length)
+                    drop.VisibleCount = drop.Length;
                 else
-                    k.Visible++;
+                    drop.VisibleCount++;
 
                 Console.ForegroundColor = color;
                 
-                if (!hore)
+                if (!up)
                 {
-                    if (k.Visible > 0)
+                    if (drop.VisibleCount > 0)
                     {
-                        for (int j = 1; j < k.Visible; j++)
+                        for (int j = 1; j < drop.VisibleCount; j++)
                         {
-                            if (k.Y > 0)
+                            if (drop.YPosition > 0)
                             {
-                                int tmp = k.Y - j;
-                                Console.SetCursorPosition(k.Pozicia, tmp);
-                                decChar = r.Next(lower, upper + 1);
+                                int tmp = drop.YPosition - j;
+                                Console.SetCursorPosition(drop.XPosition, tmp);
+                                decChar = rand.Next(lower, upper + 1);
                                 Console.Write((char)decChar);
                             }
                         }
@@ -97,36 +97,36 @@ namespace MatrixRain
 
                     Thread.Sleep(sleep);
 
-                    if ((k.Y - k.Dlzka) >= 0)
+                    if ((drop.YPosition - drop.Length) >= 0)
                     {
-                        i = k.Y - k.Dlzka;
-                        Console.SetCursorPosition(k.Pozicia, i);
+                        i = drop.YPosition - drop.Length;
+                        Console.SetCursorPosition(drop.XPosition, i);
                         Console.Write(" ");
                     }
-                    k.Y++;
+                    drop.YPosition++;
 
-                    if (k.Y >= Console.WindowHeight)
+                    if (drop.YPosition >= Console.WindowHeight)
                     {
-                        k.Y = Console.WindowHeight - 1;
-                        k.Dlzka--;
-                        k.End = true;
-                        if (k.Dlzka == -1)
+                        drop.YPosition = Console.WindowHeight - 1;
+                        drop.Length--;
+                        drop.FirstHidden = true;
+                        if (drop.Length == -1)
                         {
-                            vymaz.Add(k);
+                            deleteList.Add(drop);
                         }
                     }
                 }
                 else
                 {
-                    if (k.Visible > 0)
+                    if (drop.VisibleCount > 0)
                     {
-                        for (int j = 1; j < k.Visible; j++)
+                        for (int j = 1; j < drop.VisibleCount; j++)
                         {
-                            if (k.Y < Console.WindowHeight - 1)
+                            if (drop.YPosition < Console.WindowHeight - 1)
                             {
-                                int tmp = k.Y + j;
-                                Console.SetCursorPosition(k.Pozicia, tmp);
-                                decChar = r.Next(lower, upper + 1);
+                                int tmp = drop.YPosition + j;
+                                Console.SetCursorPosition(drop.XPosition, tmp);
+                                decChar = rand.Next(lower, upper + 1);
                                 Console.Write((char)decChar);
                             }
                         }
@@ -134,62 +134,62 @@ namespace MatrixRain
 
                     Thread.Sleep(sleep);
 
-                    if ((k.Y + k.Dlzka) <= Console.WindowHeight - 1)
+                    if ((drop.YPosition + drop.Length) <= Console.WindowHeight - 1)
                     {
-                        i = k.Y + k.Dlzka;
-                        Console.SetCursorPosition(k.Pozicia, i);
+                        i = drop.YPosition + drop.Length;
+                        Console.SetCursorPosition(drop.XPosition, i);
                         Console.Write(" ");
                     }
 
-                    k.Y--;
+                    drop.YPosition--;
 
-                    if (k.Y < 0)
+                    if (drop.YPosition < 0)
                     {
-                        k.Y = 0;
-                        k.Dlzka--;
-                        k.End = true;
-                        if (k.Dlzka == -1)
+                        drop.YPosition = 0;
+                        drop.Length--;
+                        drop.FirstHidden = true;
+                        if (drop.Length == -1)
                         {
-                            vymaz.Add(k);
+                            deleteList.Add(drop);
                         }
                     }
                 }
             }
-            foreach (var kvapka in vymaz)
+            foreach (var drop in deleteList)
             {
-                kvapky.Remove(kvapka);
+                drops.Remove(drop);
             }
-            vymaz.Clear();
+            deleteList.Clear();
         }
 
-        public void generujKvapky(ref List<Kvapka> kvapky, bool hore)
+        public void GenerateDrops(ref List<Drop> drops, bool up)
         {
-            Kvapka k;
-            if (!hore)
-                k = new Kvapka(r.Next(Console.WindowWidth), (r.Next(Console.WindowHeight - 3)) + 2, 0);
+            Drop drop;
+            if (!up)
+                drop = new Drop(rand.Next(Console.WindowWidth), (rand.Next(Console.WindowHeight - 3)) + 2, 0);
             else
-                k = new Kvapka(r.Next(Console.WindowWidth), (r.Next(Console.WindowHeight - 3)) + 2, Console.WindowHeight - 1);
+                drop = new Drop(rand.Next(Console.WindowWidth), (rand.Next(Console.WindowHeight - 3)) + 2, Console.WindowHeight - 1);
 
-            kvapky.Add(k);
+            drops.Add(drop);
         }
     }
 
-    class Kvapka
+    class Drop
     {
-        public int Pozicia { get; }
-        public int Dlzka { get; set;  }
-        public int Y { get; set; }
-        public int Visible { get; set; }
-        public bool End { get; set; }
+        public int XPosition { get; }
+        public int Length { get; set;  }
+        public int YPosition { get; set; }
+        public int VisibleCount { get; set; }
+        public bool FirstHidden { get; set; }
 
 
-        public Kvapka(int pozicia, int dlzka, int y)
+        public Drop(int xPosition, int length, int yPosition)
         {
-            this.Pozicia = pozicia;
-            this.Dlzka = dlzka;
-            Y = y;
-            Visible = 0;
-            End = false;
+            XPosition = xPosition;
+            Length = length;
+            YPosition = yPosition;
+            VisibleCount = 0;
+            FirstHidden = false;
         }
     }
 }
