@@ -28,7 +28,7 @@
             int counter = 0;
             while (!Console.KeyAvailable)
             {
-                matrixRain.MoveDrops(ref counter, ref drops, ref deleteList, up, sleep, Sets[set,0], Sets[set,1], color);
+                matrixRain.MoveDrops(ref drops, ref deleteList, up, sleep, Sets[set,0], Sets[set,1], color);
                 if ((counter % 2) == 0)
                 {
                     matrixRain.GenerateDrops(ref drops, up);
@@ -51,8 +51,9 @@
     class MatrixRain
     {
         private Random rand = new();
-        public void MoveDrops(ref int i, ref List<Drop> drops, ref List<Drop> deleteList, bool up, int sleep, int lower, int upper, ConsoleColor color)
+        public void MoveDrops(ref List<Drop> drops, ref List<Drop> deleteList, bool up, int sleep, int lower, int upper, ConsoleColor color)
         {
+            int i;
             foreach (var drop in drops)
             {
                 Console.SetCursorPosition(drop.XPosition, drop.YPosition);
